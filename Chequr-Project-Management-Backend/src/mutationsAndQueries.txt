@@ -1,0 +1,688 @@
+Graphql Mutations and Queries
+
+========================================
+APP RESOLVER
+========================================
+
+Query: health
+----------------------------------------
+query {
+  health
+}
+Variables: {}
+Headers: {}
+
+========================================
+AUTH RESOLVER
+========================================
+
+Mutation: login
+----------------------------------------
+mutation Login($email: String!, $password: String!) {
+  login(email: $email, password: $password) {
+    message
+    token
+    user {
+      id
+      email
+      roles
+    }
+  }
+}
+Variables: {
+  "email": "user@example.com",
+  "password": "password123"
+}
+Headers: {}
+Headers: {}
+
+Query: me
+----------------------------------------
+query Me {
+  me {
+    id
+    email
+    roles
+  }
+}
+Variables: {}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: forgotPassword
+----------------------------------------
+mutation ForgotPassword($email: String!) {
+  forgotPassword(email: $email)
+}
+Variables: {
+  "email": "user@example.com"
+}
+Headers: {}
+
+Mutation: verifyResetOtp
+----------------------------------------
+mutation VerifyResetOtp($email: String!, $otp: String!) {
+  verifyResetOtp(email: $email, otp: $otp)
+}
+Variables: {
+  "email": "user@example.com",
+  "otp": "123456"
+}
+Headers: {}
+
+Mutation: resetPassword
+----------------------------------------
+mutation ResetPassword($email: String!, $newPassword: String!) {
+  resetPassword(email: $email, newPassword: $newPassword)
+}
+Variables: {
+  "email": "user@example.com",
+  "newPassword": "newPassword123"
+}
+Headers: {}
+
+Mutation: completeRegistration
+----------------------------------------
+mutation CompleteRegistration($input: CompleteRegistrationInput!) {
+  completeRegistration(input: $input)
+}
+Variables: {
+  "input": {
+    "token": "valid-invite-token",
+    "password": "newPassword123",
+    "firstName": "John",
+    "lastName": "Doe"
+  }
+}
+Headers: {}
+
+========================================
+INVITES RESOLVER
+========================================
+
+Mutation: inviteUser (Admin Only)
+----------------------------------------
+mutation InviteUser($input: InviteUserInput!) {
+  inviteUser(input: $input)
+}
+Variables: {
+  "input": {
+    "email": "example@gmail.com",
+    "roles": ["MEMBER"], 
+    "firstName": "John",
+    "lastName": "Doe"
+  }
+}
+Headers: {
+  "Authorization": "Bearer <ADMIN_JWT_TOKEN>"
+}
+
+Mutation: sendBulkInvites (Invites Module - Admin Only)
+----------------------------------------
+mutation SendBulkInvites($users: [BulkInviteInput!]!) {
+  sendBulkInvites(users: $users)
+}
+Variables: {
+  "users": [
+    {
+      "email": "user1@example.com",
+      "roles": ["MEMBER"],
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "1234567890",
+      "employeeId": "EMP-101"
+    }
+  ]
+}
+Headers: {
+  "Authorization": "Bearer <ADMIN_JWT_TOKEN>"
+}
+
+Query: getInviteData
+----------------------------------------
+query GetInviteData($token: String!) {
+  getInviteData(token: $token) {
+    id
+    email
+    firstName
+    lastName
+  }
+}
+Variables: {
+  "token": "valid-invite-token"
+}
+Headers: {}
+
+========================================
+USERS RESOLVER
+========================================
+
+Query: user
+----------------------------------------
+query User($id: ID!) {
+  user(id: $id) {
+    id
+    email
+    firstName
+    lastName
+    phone
+    roleKeys
+  }
+}
+Variables: {
+  "id": "user-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Query: userByEmail (Admin Only)
+----------------------------------------
+query UserByEmail($email: String!) {
+  userByEmail(email: $email) {
+    id
+    email
+    firstName
+    lastName
+    roleKeys
+    status
+  }
+}
+Variables: {
+  "email": "target@example.com"
+}
+Headers: {
+  "Authorization": "Bearer <ADMIN_JWT_TOKEN>"
+}
+
+Mutation: deleteUser (Admin Only)
+----------------------------------------
+mutation DeleteUser($email: String!) {
+  deleteUser(email: $email)
+}
+Variables: {
+  "email": "target@example.com"
+}
+Headers: {
+  "Authorization": "Bearer <ADMIN_JWT_TOKEN>"
+}
+
+Mutation: updateUserById (Admin Only)
+----------------------------------------
+mutation UpdateUserById($id: ID!, $input: UpdateUserInput!) {
+  updateUserById(id: $id, input: $input) {
+    id
+    firstName
+    lastName
+    roleKeys
+  }
+}
+Variables: {
+  "id": "user-uuid",
+  "input": {
+    "firstName": "NewName",
+    "roles": ["ADMIN"]
+  }
+}
+Headers: {
+  "Authorization": "Bearer <ADMIN_JWT_TOKEN>"
+}
+
+Query: users (Admin Only)
+----------------------------------------
+query Users {
+  users {
+    id
+    email
+    firstName
+    lastName
+    roleKeys
+    status
+  }
+}
+Variables: {}
+Headers: {
+  "Authorization": "Bearer <ADMIN_JWT_TOKEN>"
+}
+
+Query: organizationTeam
+----------------------------------------
+query OrganizationTeam($orgId: ID!) {
+  organizationTeam(orgId: $orgId) {
+    id
+    name
+    email
+    roles
+    status
+  }
+}
+Variables: {
+  "orgId": "org-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: updateProfile (Authenticated User)
+----------------------------------------
+mutation UpdateProfile($input: UpdateUserInput!) {
+  updateProfile(input: $input) {
+    id
+    firstName
+    lastName
+    phone
+    email
+  }
+}
+Variables: {
+  "input": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "phone": "9876543210"
+  }
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+========================================
+ISSUE RESOLVER
+========================================
+
+Mutation: createIssue
+----------------------------------------
+mutation CreateIssue($input: CreateIssueInput!) {
+  createIssue(input: $input) {
+    id
+    title
+    description
+    status
+    priority
+    type
+    project {
+      id
+      name
+    }
+    reporter {
+      id
+      firstName
+    }
+    assignee {
+      id
+      firstName
+    }
+  }
+}
+Variables: {
+  "input": {
+    "title": "Fix Login Bug",
+    "description": "User cannot login with valid credentials",
+    "type": "BUG",
+    "priority": "HIGH",
+    "projectId": "project-uuid",
+    "assigneeId": "user-uuid",
+    "sprintId": "sprint-uuid" 
+  }
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: updateIssue
+----------------------------------------
+mutation UpdateIssue($input: UpdateIssueInput!) {
+  updateIssue(input: $input) {
+    id
+    title
+    status
+    assignee {
+      id
+      firstName
+    }
+  }
+}
+Variables: {
+  "input": {
+    "issueId": "issue-uuid",
+    "status": "IN_PROGRESS",
+    "priority": "LOW"
+  }
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: assignIssue
+----------------------------------------
+mutation AssignIssue($input: AssignIssueInput!) {
+  assignIssue(input: $input) {
+    id
+    assignee {
+      id
+      firstName
+      email
+    }
+  }
+}
+Variables: {
+  "input": {
+    "issueId": "issue-uuid",
+    "assigneeId": "user-uuid"
+  }
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: deleteIssue
+----------------------------------------
+mutation DeleteIssue($id: ID!) {
+  deleteIssue(id: $id) {
+    id
+    title
+  }
+}
+Variables: {
+  "id": "issue-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Query: getIssueById
+----------------------------------------
+query GetIssueById($id: ID!) {
+  getIssueById(id: $id) {
+    id
+    title
+    description
+    status
+    priority
+    type
+    project {
+      id
+      name
+    }
+    reporter {
+      id
+      firstName
+    }
+    assignee {
+      id
+      firstName
+    }
+    subtasks {
+        id
+        title
+    }
+  }
+}
+Variables: {
+  "id": "issue-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Query: getIssuesByProject
+----------------------------------------
+query GetIssuesByProject($projectId: ID!) {
+  getIssuesByProject(projectId: $projectId) {
+    id
+    title
+    status
+    priority
+    type
+    assignee {
+      id
+      firstName
+    }
+    reporter {
+        id
+        firstName
+    }
+  }
+}
+Variables: {
+  "projectId": "project-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Query: getMyAssignedIssues
+----------------------------------------
+query GetMyAssignedIssues {
+  getMyAssignedIssues {
+    id
+    title
+    status
+    priority
+    project {
+      id
+      name
+    }
+  }
+}
+Variables: {}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+========================================
+PROJECTS RESOLVER
+========================================
+
+Mutation: createProject
+----------------------------------------
+mutation CreateProject($createProjectInput: CreateProjectInput!) {
+  createProject(createProjectInput: $createProjectInput) {
+    id
+    name
+    key
+    description
+    status
+    owner {
+      id
+      firstName
+    }
+  }
+}
+Variables: {
+  "createProjectInput": {
+    "name": "New Project",
+    "key": "NEWPROJ",
+    "description": "A new project description",
+    "type": "KANBAN"
+  }
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Query: projects
+----------------------------------------
+query Projects {
+  projects {
+    id
+    name
+    key
+    status
+    owner {
+      firstName
+    }
+  }
+}
+Variables: {}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Query: project
+----------------------------------------
+query Project($id: String!) {
+  project(id: $id) {
+    id
+    name
+    key
+    description
+    members {
+      user {
+        firstName
+      }
+      role
+    }
+  }
+}
+Variables: {
+  "id": "project-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: updateProject
+----------------------------------------
+mutation UpdateProject($updateProjectInput: UpdateProjectInput!) {
+  updateProject(updateProjectInput: $updateProjectInput) {
+    id
+    name
+  }
+}
+Variables: {
+  "updateProjectInput": {
+    "id": "project-uuid",
+    "name": "Updated Project Name"
+  }
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: archiveProject
+----------------------------------------
+mutation ArchiveProject($id: String!) {
+  archiveProject(id: $id) {
+    id
+    status
+  }
+}
+Variables: {
+  "id": "project-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: assignUsersToProject
+----------------------------------------
+mutation AssignUsersToProject($assignUsersInput: AssignUsersInput!) {
+  assignUsersToProject(assignUsersInput: $assignUsersInput) {
+    id
+    members {
+      user {
+        email
+      }
+    }
+  }
+}
+Variables: {
+  "assignUsersInput": {
+    "projectId": "project-uuid",
+    "userIds": ["user-uuid-1", "user-uuid-2"]
+  }
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: assignUserToProject
+----------------------------------------
+mutation AssignUserToProject($projectId: ID!, $userId: ID!) {
+  assignUserToProject(projectId: $projectId, userId: $userId) {
+    id
+    members {
+       user {
+         id
+         firstName
+       }
+    }
+  }
+}
+Variables: {
+  "projectId": "project-uuid",
+  "userId": "user-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: deleteProject
+----------------------------------------
+mutation DeleteProject($id: ID!) {
+  deleteProject(id: $id)
+}
+Variables: {
+  "id": "project-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+========================================
+SPRINTS RESOLVER
+========================================
+
+Mutation: createSprint
+----------------------------------------
+mutation CreateSprint($input: CreateSprintInput!) {
+  createSprint(input: $input) {
+    id
+    name
+    startDate
+    endDate
+    status
+  }
+}
+Variables: {
+  "input": {
+    "name": "Sprint 1",
+    "startDate": "2023-10-01T00:00:00Z",
+    "endDate": "2023-10-14T00:00:00Z",
+    "projectId": "project-uuid"
+  }
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: startSprint
+----------------------------------------
+mutation StartSprint($sprintId: String!) {
+  startSprint(sprintId: $sprintId) {
+    id
+    status
+  }
+}
+Variables: {
+  "sprintId": "sprint-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}
+
+Mutation: completeSprint
+----------------------------------------
+mutation CompleteSprint($sprintId: String!) {
+  completeSprint(sprintId: $sprintId) {
+    id
+    status
+  }
+}
+Variables: {
+  "sprintId": "sprint-uuid"
+}
+Headers: {
+  "Authorization": "Bearer <YOUR_JWT_TOKEN>"
+}

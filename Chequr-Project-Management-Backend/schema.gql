@@ -1,0 +1,469 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Role {
+  id: ID!
+  organizationId: String
+  name: String!
+  key: String!
+  description: String
+  isSystemRole: Boolean!
+}
+
+type UserRole {
+  id: ID!
+  organizationId: String
+  userId: String!
+  roleId: String!
+  role: Role!
+  assignedBy: String
+  createdAt: DateTime!
+  deletedAt: DateTime
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Sprint {
+  id: ID!
+  name: String!
+  startDate: DateTime!
+  endDate: DateTime!
+  goal: String
+  status: SprintStatus!
+  project: Project!
+  issues: [Issue!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum SprintStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
+type WorkflowStage {
+  id: ID!
+  name: String!
+  orderIndex: Int!
+  isFinal: Boolean!
+  workflowId: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Workflow {
+  id: ID!
+  name: String!
+  isDefault: Boolean!
+  transitionMode: String!
+  projectId: ID
+  stages: [WorkflowStage!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type WorkflowTransition {
+  id: ID!
+  workflow: Workflow!
+  fromStage: WorkflowStage!
+  toStage: WorkflowStage!
+  allowedRoles: [String!]!
+}
+
+type Project {
+  id: ID!
+  name: String!
+  key: String!
+  description: String
+  ownerId: ID!
+  owner: User!
+  organizationId: ID!
+  status: ProjectStatus!
+  color: String
+  icon: String
+  type: String
+  members: [User]!
+  issues: [Issue]!
+  sprints: [Sprint]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  workflowId: ID
+  workflow: Workflow
+  stages: [WorkflowStage]!
+  transitions: [WorkflowTransition]!
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  COMPLETED
+  ON_HOLD
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  issue: Issue!
+  author: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isEdited: Boolean!
+}
+
+type Issue {
+  id: ID!
+  title: String!
+  description: String
+  blockedReason: String
+  storyPoints: Float
+  dueDate: DateTime
+  type: issueType!
+  priority: issuePriority!
+  boardOrder: Float
+  stageId: ID
+  stage: WorkflowStage
+  project: Project
+  reporter: User
+  assignee: User
+  sprintId: ID
+  sprint: Sprint
+  parent: Issue
+  childIssues: [Issue!]
+  subtaskList: [Subtask!]
+  comments: [Comment!]
+  attachments: [Attachment!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum issueType {
+  EPIC
+  STORY
+  TASK
+  BUG
+  SUBTASK
+}
+
+enum issuePriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+type Subtask {
+  id: ID!
+  title: String!
+  completed: Boolean!
+  issue: Issue!
+}
+
+type Attachment {
+  id: ID!
+  fileName: String!
+  mimeType: String!
+  fileSize: Float!
+  issue: Issue!
+  uploadedBy: User!
+  createdAt: DateTime!
+  base64: String!
+}
+
+type DownloadAttachmentResponse {
+  fileName: String!
+  mimeType: String!
+  base64: String!
+}
+
+type User {
+  id: ID!
+  organizationId: String
+  email: String!
+  firstName: String
+  lastName: String
+  phone: String
+  employeeId: String
+  reportingManager: String
+  status: UserStatus!
+  roles: [UserRole!]
+  avatarUrl: String
+  emailVerified: Boolean!
+  emailVerifiedAt: DateTime
+  employmentType: String
+  employmentStatus: String
+  isInScope: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  projects: [Project]!
+  username: String!
+  roleKeys: [String!]!
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+type LoginUser {
+  id: ID!
+  email: String!
+  roles: [String!]!
+  phone: String
+}
+
+type LoginResponse {
+  message: String!
+  user: LoginUser!
+}
+
+type TeamMember {
+  id: String!
+  name: String!
+  firstName: String
+  lastName: String
+  email: String!
+  roles: [String!]!
+  status: String!
+  phone: String
+  employeeId: String
+  reportingManager: String
+}
+
+type BoardStage {
+  id: ID!
+  name: String!
+  orderIndex: Int!
+  issues: [Issue!]!
+}
+
+type Query {
+  health: String!
+  me: LoginUser!
+  getInviteData(token: String!): User!
+  users: [User!]!
+  user(id: ID!): User!
+  userByEmail(email: String!): User!
+  organizationTeam(orgId: ID!): [TeamMember!]!
+  isProjectKeyAvailable(key: String!): Boolean!
+  projects: [Project!]!
+  project(id: String!): Project!
+  getStagesByWorkflow(workflowId: String!): [WorkflowStage!]!
+  getIssueById(id: ID!): Issue!
+  getIssuesByProject(projectId: ID!): [Issue!]!
+  getBoardIssues(projectId: String!, sprintId: String, assigneeId: String): [BoardStage!]!
+  getMyIssues(filter: String): [Issue!]!
+  getSprintsByProject(projectId: String!): [Sprint!]!
+  myAssignedIssues: [Issue!]!
+  commentsByIssue(issueId: String!): [Comment!]!
+  attachmentsByIssue(issueId: String!): [Attachment!]!
+  downloadAttachment(id: ID!): DownloadAttachmentResponse!
+}
+
+type Mutation {
+  login(email: String!, password: String!): LoginResponse!
+  refreshToken: LoginResponse!
+  logout: String!
+  forgotPassword(email: String!): String!
+  verifyResetOtp(email: String!, otp: String!): String!
+  resetPassword(email: String!, newPassword: String!): String!
+  completeRegistration(input: CompleteRegistrationInput!): String!
+  inviteUser(input: InviteUserInput!): String!
+  sendBulkInvites(users: [BulkInviteInput!]!): [String!]!
+  updateUserById(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(email: String!): Boolean!
+  updateProfile(input: UpdateUserInput!): User!
+  createProject(createProjectInput: CreateProjectInput!): Project!
+  updateProject(updateProjectInput: UpdateProjectInput!): Project!
+  archiveProject(id: String!): Project!
+  unarchiveProject(id: String!): Project!
+  assignUsersToProject(assignUsersInput: AssignUsersInput!): Project!
+  assignUserToProject(projectId: ID!, userId: ID!): Project!
+  deleteProject(id: ID!): Boolean!
+  createWorkflowAdvanced(input: CreateWorkflowAdvancedInput!): Workflow!
+  deleteStage(stageId: String!): Boolean!
+  reorderStage(stageId: String!, newOrderIndex: Float!): [WorkflowStage!]!
+  createIssue(input: CreateIssueInput!): Issue!
+  updateIssue(input: UpdateIssueInput!): Issue!
+  assignIssue(input: AssignIssueInput!): Issue!
+  deleteIssue(id: ID!): Boolean!
+  addSubtask(issueId: ID!, title: String!): Subtask!
+  toggleSubtask(subtaskId: ID!): Subtask!
+  deleteSubtask(subtaskId: ID!): Boolean!
+  createSprint(input: createSprintInput!): Sprint!
+  completeSprint(sprintId: String!): Sprint!
+  checkExpiredSprints: Boolean!
+  updateSprint(input: updateSprintInput!): Sprint!
+  startSprint(input: startSprintInput!): Sprint!
+  deleteSprint(sprintId: String!): Boolean!
+  moveIssue(input: MoveIssueInput!): Issue!
+  createComment(createCommentInput: CreateCommentInput!): Comment!
+  deleteComment(id: ID!): Boolean!
+  updateComment(updateCommentInput: UpdateCommentInput!): Comment!
+  uploadAttachment(issueId: String!, file: Upload!): Attachment!
+  deleteAttachment(id: ID!): Boolean!
+  updateAttachment(id: ID!, fileName: String!): Attachment!
+}
+
+input CompleteRegistrationInput {
+  token: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+}
+
+input InviteUserInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  phone: String
+  roles: [String!]!
+  managerId: String
+  employeeId: String
+  reportingManager: String
+}
+
+input BulkInviteInput {
+  email: String!
+  roles: [String!]
+  role: String @deprecated(reason: "Use roles instead")
+  firstName: String
+  lastName: String
+  phone: String
+  employeeId: String
+}
+
+input UpdateUserInput {
+  firstName: String
+  lastName: String
+  phone: String
+  employeeId: String
+  reportingManager: String
+  roles: [String!]
+}
+
+input CreateProjectInput {
+  name: String!
+  key: String!
+  description: String
+  color: String
+  icon: String
+  type: String
+  workflow: CreateWorkflowAdvancedInput
+}
+
+input CreateWorkflowAdvancedInput {
+  name: String!
+  isDefault: Boolean!
+  projectId: String
+  transitionMode: String
+  stages: [CreateStageInput!]
+  transitions: [CreateWorkflowTransitionInput!]
+}
+
+input CreateStageInput {
+  name: String!
+  orderIndex: Float!
+  isFinal: Boolean
+}
+
+input CreateWorkflowTransitionInput {
+  fromStage: String!
+  toStage: String!
+  allowedRoles: [String!]
+}
+
+input UpdateProjectInput {
+  id: ID!
+  name: String
+  description: String
+  color: String
+  icon: String
+  type: String
+  status: ProjectStatus
+}
+
+input AssignUsersInput {
+  projectId: ID!
+  userIds: [ID!]!
+}
+
+input CreateIssueInput {
+  title: String!
+  description: String
+  storyPoints: Float
+  dueDate: String
+  type: issueType!
+  priority: issuePriority
+  projectId: ID!
+  assigneeId: ID
+  sprintId: ID
+  parentId: ID
+  stageId: ID
+}
+
+input UpdateIssueInput {
+  issueId: ID!
+  title: String
+  description: String
+  priority: issuePriority
+  assigneeId: ID
+  sprintId: ID
+  type: issueType
+  storyPoints: Float
+  dueDate: DateTime
+  blockedReason: String
+}
+
+input AssignIssueInput {
+  issueId: ID!
+  assigneeId: ID!
+}
+
+input createSprintInput {
+  name: String!
+  startDate: DateTime
+  endDate: DateTime
+  goal: String
+  projectId: String!
+}
+
+input updateSprintInput {
+  sprintId: ID!
+  name: String
+  startDate: DateTime
+  endDate: DateTime
+  goal: String
+}
+
+input startSprintInput {
+  sprintId: ID!
+  startDate: DateTime!
+  endDate: DateTime!
+  goal: String!
+}
+
+input MoveIssueInput {
+  issueId: ID!
+  stageId: ID!
+  position: Float
+}
+
+input CreateCommentInput {
+  issueId: String!
+  content: String!
+}
+
+input UpdateCommentInput {
+  commentId: ID!
+  content: String!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload

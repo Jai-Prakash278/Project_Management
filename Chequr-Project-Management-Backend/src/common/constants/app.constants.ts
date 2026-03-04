@@ -1,0 +1,5 @@
+export const APP_CONSTANTS = {
+  DEFAULT_ROLE: 'USER',
+  INVITATION_EXPIRY_HOURS: 24,
+  PASSWORD_RESET_EXPIRY_HOURS: 1,  // For password reset
+};
