@@ -10,9 +10,11 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:5173',
-      process.env.FRONTEND_URL?.replace(/\/+$/, ''),  // deployed frontend (remove trailing slash)
+      process.env.FRONTEND_URL?.replace(/\/+$/, ''),
     ].filter(Boolean) as string[],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Apollo-Require-Preflight'],
+    exposedHeaders: ['Authorization'],  // Allow frontend to read the JWT from response
   });
 
   app.use(cookieParser());
