@@ -37,8 +37,8 @@ export class AuthResolver {
       // Set the Refresh Token as an HttpOnly Cookie
       context.res.cookie('refreshToken', result.refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none',  // Required for cross-origin cookies (Vercel → Render)
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
     }
@@ -76,8 +76,8 @@ export class AuthResolver {
     if (context.res) {
       context.res.clearCookie('refreshToken', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'none',
       });
     }
     return "Logged out successfully";
