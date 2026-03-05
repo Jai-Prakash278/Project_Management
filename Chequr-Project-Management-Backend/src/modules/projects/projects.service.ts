@@ -100,7 +100,7 @@ export class ProjectsService {
 
         const userRoles = fullUser.roles.map(ur => ur.role.key);
         const isAdmin = userRoles.includes('ADMIN');
-        const isProjectManager = userRoles.includes('PROJECT_MANAGER');
+        const isProjectManager = userRoles.includes('MANAGER');
 
         const query = this.projectsRepository
             .createQueryBuilder('project')

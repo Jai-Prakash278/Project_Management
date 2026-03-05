@@ -17,7 +17,7 @@ export class ProjectAccessGuard implements CanActivate {
         const userRoles: string[] = user.roles;
 
         const isAdmin = userRoles.includes('ADMIN');
-        const isProjectManager = userRoles.includes('PROJECT_MANAGER');
+        const isProjectManager = userRoles.includes('MANAGER');
         // Member check is implicit if strict CRUD is enforced below
 
         // Admin and PM can do everything (Create, Update, Delete, Assign)
