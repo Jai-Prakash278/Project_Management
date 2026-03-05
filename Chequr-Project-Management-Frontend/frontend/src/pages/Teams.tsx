@@ -135,7 +135,7 @@ export default function Teams() {
     const isAdmin = meData?.me?.roles?.includes('ADMIN') || false;
 
     return (
-        <div className="flex flex-col h-full relative">
+        <div className="flex flex-col h-full relative overflow-hidden">
             {/* Page Header */}
             <div className="flex items-center justify-between px-8 py-6 border-b border-gray-200">
                 <div className="flex items-center gap-4">
@@ -208,8 +208,8 @@ export default function Teams() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 p-8">
-                <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+            <div className="flex-1 p-8 overflow-y-auto min-h-0">
+                <div className="border border-gray-200 rounded-xl overflow-x-auto bg-white shadow-sm">
                     <TeamsTable
                         members={filteredMembers}
                         onDelete={handleDelete}
