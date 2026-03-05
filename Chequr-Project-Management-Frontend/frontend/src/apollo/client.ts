@@ -80,8 +80,9 @@ const errorLink = new ErrorLink(({ error, operation, forward }) => {
 
   // Don't try to refresh if the failing operation IS the refresh
   if (operation.operationName === 'RefreshToken') {
+    // Don't redirect — AuthInitialize already handles this gracefully.
+    // A hard redirect here causes an infinite reload loop.
     store.dispatch(logout());
-    window.location.href = '/login';
     return;
   }
 
@@ -111,7 +112,6 @@ const errorLink = new ErrorLink(({ error, operation, forward }) => {
             pendingRequests = [];
           } else {
             store.dispatch(logout());
-            window.location.href = '/login';
             observer.error(error);
           }
         })
@@ -119,7 +119,6 @@ const errorLink = new ErrorLink(({ error, operation, forward }) => {
           isRefreshing = false;
           pendingRequests = [];
           store.dispatch(logout());
-          window.location.href = '/login';
           observer.error(error);
         });
     });
