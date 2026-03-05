@@ -39,9 +39,9 @@ function AuthInitialize({ children }: { children: React.ReactNode }) {
         } else {
           dispatch(logout());
         }
-      } catch (error) {
-        console.error("Failed to restore session via refresh token", error);
-        dispatch(logout()); // Ensure Redux clears if cookie is invalid
+      } catch {
+        // Expected when no session exists (user not logged in)
+        dispatch(logout());
       } finally {
         dispatch(setInitializing(false));
       }

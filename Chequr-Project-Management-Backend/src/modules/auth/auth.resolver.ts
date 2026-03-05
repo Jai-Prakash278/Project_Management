@@ -5,7 +5,7 @@ import {
   Query,
   Context,
 } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, UnauthorizedException } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { LoginResponse } from './dto/login-response.dto';
@@ -56,7 +56,7 @@ export class AuthResolver {
     const token = req.cookies?.refreshToken;
 
     if (!token) {
-      throw new Error('No refresh token found');
+      throw new UnauthorizedException('No refresh token found');
     }
 
     const result = await this.authService.refreshAccessToken(token);

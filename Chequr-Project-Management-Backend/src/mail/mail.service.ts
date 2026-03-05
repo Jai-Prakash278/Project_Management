@@ -1,57 +1,47 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+import { Resend } from 'resend';
 
 @Injectable()
 export class MailService {
-  private transporter: any;
+  private resend: Resend;
   private readonly logger = new Logger(MailService.name);
-  private smtpUser: string;
+  private fromEmail: string;
 
   constructor(private readonly configService: ConfigService) {
-    const host = this.configService.get<string>('SMTP_HOST');
-    const port = this.configService.get<number>('SMTP_PORT');
-    this.smtpUser = this.configService.get<string>('SMTP_USER') || '';
-    const pass = this.configService.get<string>('SMTP_PASSWORD');
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
 
-    this.logger.log(`Initializing MailService with host: ${host}, port: ${port}, user: ${this.smtpUser}`);
+    if (!apiKey) {
+      this.logger.warn(
+        'RESEND_API_KEY is not set. Emails will not be sent. ' +
+        'Sign up at https://resend.com and add the key to your environment.',
+      );
+    }
 
-    this.transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: {
-        user: this.smtpUser,
-        pass,
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
+    this.resend = new Resend(apiKey || '');
 
-    // Verify connection on startup
-    this.transporter.verify((error, success) => {
-      if (error) {
-        this.logger.error('SMTP Connection Error:', error);
-      } else {
-        this.logger.log('SMTP Server is ready to take our messages');
-      }
-    });
+    // Use a verified domain address, or the Resend test address for development
+    this.fromEmail =
+      this.configService.get<string>('EMAIL_FROM') ||
+      'Chequr <onboarding@resend.dev>';
+
+    this.logger.log(`MailService initialized (from: ${this.fromEmail})`);
   }
 
   async sendInviteEmail(email: string, token: string, role: string) {
-    const rawFrontendUrl = this.configService.get<string>('FRONTEND_URL') || '';
-    const frontendUrl = rawFrontendUrl.replace(/\/+$/, ''); // Remove one or more trailing slashes
+    const rawFrontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || '';
+    const frontendUrl = rawFrontendUrl.replace(/\/+$/, '');
     const inviteLink = `${frontendUrl}/register?token=${token}`;
     this.logger.log(`Generated Invite Link: ${inviteLink}`);
 
     try {
-      await this.transporter.sendMail({
-        from: `"Chequr" <${this.smtpUser}>`,
-        to: email,
+      const { data, error } = await this.resend.emails.send({
+        from: this.fromEmail,
+        to: [email],
         subject: 'You are invited to Chequr',
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; rounded: 8px;">
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
             <h2 style="color: #4f46e5;">Welcome to Chequr</h2>
             <p>You have been invited to join our platform with the role: <strong>${role}</strong></p>
             <p>Please click the button below to complete your registration and set your password:</p>
@@ -63,34 +53,52 @@ export class MailService {
           </div>
         `,
       });
-      this.logger.log(`Invitation email successfully sent to ${email}`);
+
+      if (error) {
+        this.logger.error(
+          `Failed to send invitation email to ${email}: ${error.message}`,
+        );
+        return;
+      }
+
+      this.logger.log(
+        `Invitation email sent to ${email} (id: ${data?.id})`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to send invitation email to ${email}. Error: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send invitation email to ${email}. Error: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
   async sendForgotPasswordOtp(email: string, otp: string) {
     try {
-      await this.transporter.sendMail({
-        from: '"Chequr" <no-reply@chequr.com>',
-        to: email,
+      const { data, error } = await this.resend.emails.send({
+        from: this.fromEmail,
+        to: [email],
         subject: 'Chequr Password Reset OTP',
         html: `
-          <h3>Password Reset Request</h3>
-          <p>We received a request to reset your password.</p>
-          <p>Your One-Time Password (OTP) is:</p>
-          <h2 style="letter-spacing: 3px;">${otp}</h2>
-          <p>This OTP is valid for 1 min.</p>
-          <p>If you did not request this, please ignore this email.</p>
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <h3 style="color: #4f46e5;">Password Reset Request</h3>
+            <p>We received a request to reset your password.</p>
+            <p>Your One-Time Password (OTP) is:</p>
+            <h2 style="letter-spacing: 3px; color: #111827;">${otp}</h2>
+            <p>This OTP is valid for 15 minutes.</p>
+            <p style="color: #6b7280; font-size: 14px;">If you did not request this, please ignore this email.</p>
+          </div>
         `,
       });
 
-      this.logger.log(`Password reset OTP sent to ${email}`);
+      if (error) {
+        this.logger.error(`Failed to send OTP to ${email}: ${error.message}`);
+        throw new Error(`Email sending failed: ${error.message}`);
+      }
+
+      this.logger.log(`Password reset OTP sent to ${email} (id: ${data?.id})`);
     } catch (error) {
       this.logger.error('Failed to send password reset OTP', error);
       throw error;
     }
   }
-
-
 }
